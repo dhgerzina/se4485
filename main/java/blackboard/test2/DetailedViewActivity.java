@@ -21,9 +21,11 @@ public class DetailedViewActivity extends AppCompatActivity {
     private TextView accelerationText;
     private TextView IPText;
     private TextView barometerText;
+    private TextView seaPressureText;
     private TextView elevationText;
     private TextView timeZoneText;
     private TextView cityText;
+    private TextView countryCodeText;
     private TextView latitudeText;
     private TextView longitudeText;
 
@@ -34,14 +36,16 @@ public class DetailedViewActivity extends AppCompatActivity {
 
         magnetText = findViewById(R.id.textView);
         accelerationText = findViewById(R.id.textView2);
-        netStatusText = findViewById(R.id.textView3);
-        IPText = findViewById(R.id.textView4);
-        barometerText = findViewById(R.id.textView5);
-        elevationText = findViewById(R.id.textView6);
+        barometerText = findViewById(R.id.textView3);
+        seaPressureText = findViewById(R.id.textView4);
+        elevationText = findViewById(R.id.textView5);
+        timeZoneText = findViewById(R.id.textView6);
         cityText = findViewById(R.id.textView7);
-        timeZoneText = findViewById(R.id.textView8);
-        latitudeText = findViewById(R.id.textView9);
-        longitudeText = findViewById(R.id.textView10);
+        countryCodeText = findViewById(R.id.textView8);
+        netStatusText = findViewById(R.id.textView9);
+        IPText = findViewById(R.id.textView10);
+        latitudeText = findViewById(R.id.textView11);
+        longitudeText = findViewById(R.id.textView12);
 
         Button detailedButton = findViewById(R.id.goBack);
         detailedButton.setOnClickListener(new View.OnClickListener() {
@@ -80,24 +84,32 @@ public class DetailedViewActivity extends AppCompatActivity {
                 decimalFormat.format(BlackBoard.accelerometer[1]) + ", " +
                 decimalFormat.format(BlackBoard.accelerometer[2]);
         accelerationText.setText(temp);
+
         temp = "BAR: " + BlackBoard.pressure;
         barometerText.setText(temp);
+        temp = "SEA: " + BlackBoard.weatherPressure;
+        seaPressureText.setText(temp);
         temp = "ELE: " + BlackBoard.elevation;
         elevationText.setText(temp);
+
+        temp = "TZ: ";
+        if (BlackBoard.timeZone != null) {temp += BlackBoard.timeZone.getDisplayName();}
+        timeZoneText.setText(temp);
+        temp = "CITY: " + BlackBoard.city;
+        cityText.setText(temp);
+        temp = "CC: " + BlackBoard.countryCode;
+        countryCodeText.setText(temp);
 
         temp = "NS: " + BlackBoard.networkStatus;
         netStatusText.setText(temp);
         temp = "IP: " + BlackBoard.lastIP;
         IPText.setText(temp);
 
-        temp = "CITY: " + BlackBoard.city;
-        cityText.setText(temp);
-        temp = "TZ: " + BlackBoard.timeZone;
-        timeZoneText.setText(temp);
-
-        temp = "LAT: " + Calendar.getInstance().getTimeZone().getDisplayName();
+        temp = "LAT: ";
+        if (BlackBoard.locationKnown) {temp += BlackBoard.latitude;}
         latitudeText.setText(temp);
         temp = "LON: ";
+        if (BlackBoard.locationKnown) {temp += BlackBoard.longitude;}
         longitudeText.setText(temp);
     }
 }

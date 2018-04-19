@@ -34,6 +34,11 @@ public class AccelerometerListener extends KnowledgeSource implements SensorEven
     }
 
     @Override
+    public void broadcastUpdates() {
+        // do nothing
+    }
+
+    @Override
     public void onReceive(Context context, Intent intent) {
         //ignored
     }

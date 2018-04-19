@@ -7,18 +7,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-/**
- * Created by Alek on 3/24/2018.
- */
-
 public class PressureListener extends KnowledgeSource implements SensorEventListener {
     PressureUpdateThread updateThread;
 
     @Override
     public void registerListener() {
         //register for automatic updates
-        Sensor pressure = ListenerService.sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-        ListenerService.sensorManager.registerListener(this, pressure, SensorManager.SENSOR_DELAY_NORMAL);
         updateThread = new PressureUpdateThread(this);
         updateThread.start();
     }
@@ -39,12 +33,10 @@ public class PressureListener extends KnowledgeSource implements SensorEventList
     @Override
     public void onSensorChanged(SensorEvent event) {
         //automatic updates
-        try {
-            BlackBoard.pressureSemaphore.acquire();
-            BlackBoard.pressureArray[BlackBoard.pressureCounter] = event.values[0];
-            BlackBoard.pressureCounter++;
-            BlackBoard.pressureSemaphore.release();
-        } catch (InterruptedException e) {}
+        //only active for a short period then turned off again
+        //does not update the pressure while this is running so no worries about race conditions
+        BlackBoard.pressureArray[BlackBoard.pressureCounter] = event.values[0];
+        BlackBoard.pressureCounter++;
     }
 
     @Override
@@ -53,13 +45,9 @@ public class PressureListener extends KnowledgeSource implements SensorEventList
     }
 
     @Override
-    public void sendUpdates() {
-        //include pressureArray update in broadcast
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(BlackBoard.PRESSURE_UPDATED);
-        broadcast(broadcastIntent);
-
-        super.sendUpdates();
+    public void broadcastUpdates() {
+        //broadcast pressure update
+        ListenerService.broadcastUpdate(BlackBoard.PRESSURE_UPDATED);
     }
 
     private class PressureUpdateThread extends Thread {
@@ -74,13 +62,21 @@ public class PressureListener extends KnowledgeSource implements SensorEventList
         public void run() {
             try {
                 while (!isInterrupted() && shouldBeRunning) {
-                    Thread.sleep(10000);
-
-                    BlackBoard.pressureSemaphore.acquire();
+                    //add listener
+                    Sensor pressure = ListenerService.sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+                    ListenerService.sensorManager.registerListener(pressureListener, pressure, SensorManager.SENSOR_DELAY_NORMAL);
+                    //get data for a bit
+                    Thread.sleep(BlackBoard.PRESSURE_UPDATE_TIME);
+                    //stop listening
+                    ListenerService.sensorManager.unregisterListener(pressureListener);
+                    //update pressure
                     updatePressure();
-                    BlackBoard.pressureSemaphore.release();
+                    //wait for next cycle
+                    Thread.sleep(BlackBoard.PRESSURE_UPDATE_WAIT);
                 }
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+                ListenerService.sensorManager.unregisterListener(pressureListener);
+            }
         }
 
         private void updatePressure () {
@@ -91,7 +87,8 @@ public class PressureListener extends KnowledgeSource implements SensorEventList
             BlackBoard.pressure = sum/BlackBoard.pressureCounter;
             BlackBoard.pressureCounter = 0;
 
-            pressureListener.sendUpdates();
+            //broadcast pressure update
+            pressureListener.broadcastUpdates();
         }
     }
 }

@@ -34,6 +34,11 @@ public class MagnetometerListener extends KnowledgeSource implements SensorEvent
     }
 
     @Override
+    public void broadcastUpdates() {
+        //do nothing
+    }
+
+    @Override
     public void onReceive(Context context, Intent intent) {
         //ignored
     }

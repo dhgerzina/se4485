@@ -10,7 +10,8 @@ public class WeatherListener extends KnowledgeSource {
     @Override
     public void registerListener() {
         //register for automatic updates
-        //get updates for both city change and pressureArray change
+        //get updates for both city change and pressure change
+        //TODO: get local air pressure again if a certain amount of time has passed in the same city
         IntentFilter filter = new IntentFilter();
         filter.addAction(BlackBoard.CITY_UPDATED);
         filter.addAction(BlackBoard.PRESSURE_UPDATED);
@@ -27,33 +28,34 @@ public class WeatherListener extends KnowledgeSource {
     public void onReceive(Context context, Intent intent) {
         //automatic updates
         //only get new data from source if the city has changed
-        // (will likely later include to update if a certain amount of time has passed)
-        if (intent.getAction() == BlackBoard.CITY_UPDATED) {
+        if (intent.getAction().equals(BlackBoard.CITY_UPDATED)) {
             onCityChange();
-            onPressureChange();
-            sendUpdates();
         }
         else {
             onPressureChange();
-            sendUpdates();
+            broadcastUpdates();
         }
     }
 
     public void onCityChange() {
-
+        NetworkGetRequestTask weatherTask = new NetworkGetRequestTask();
+        weatherTask.execute(1);
     }
 
     public void onPressureChange() {
-        BlackBoard.elevation = SensorManager.getAltitude(BlackBoard.weatherPressure, BlackBoard.pressure);
+        if (BlackBoard.weatherPressure == -1 || BlackBoard.pressure == -1) {
+            BlackBoard.elevation = -1;
+        }
+        else {
+            //TODO: this is not even close to accurate for some reason, easily 40 meters off at times
+            BlackBoard.elevation = SensorManager.getAltitude(BlackBoard.weatherPressure, BlackBoard.pressure);
+        }
     }
 
     @Override
-    public void sendUpdates() {
-        //include elevation update in broadcast
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(BlackBoard.ELEVATION_UPDATED);
-        broadcast(broadcastIntent);
-
-        super.sendUpdates();
+    public void broadcastUpdates() {
+        //broadcast elevation update
+        //TODO: nothing currently uses this
+        ListenerService.broadcastUpdate(BlackBoard.ELEVATION_UPDATED);
     }
 }

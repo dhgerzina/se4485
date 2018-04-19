@@ -53,16 +53,12 @@ public class NetworkListener extends KnowledgeSource {
         else if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {BlackBoard.networkStatus = BlackBoard.NETWORK_STATUS_WIFI;}
         else {BlackBoard.networkStatus = BlackBoard.NETWORK_STATUS_CELLULAR;}
 
-        sendUpdates();
+        broadcastUpdates();
     }
 
     @Override
-    public void sendUpdates() {
-        //include network status update in broadcast
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(BlackBoard.NETWORK_STATUS_UPDATED);
-        broadcast(broadcastIntent);
-
-        super.sendUpdates();
+    public void broadcastUpdates() {
+        //broadcast network status update
+        ListenerService.broadcastUpdate(BlackBoard.NETWORK_STATUS_UPDATED);
     }
 }

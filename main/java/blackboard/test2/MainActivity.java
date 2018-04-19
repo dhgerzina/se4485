@@ -3,8 +3,6 @@ package blackboard.test2;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -19,7 +17,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DecimalFormat;
-import java.util.Calendar;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
@@ -27,7 +24,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private DecimalFormat decimalFormat = new DecimalFormat("0.00");
     private UIUpdateThread uiThread;
     private TextView netStatusText;
-    private TextView IPText;
+    private TextView cityText;
     private TextView elevationText;
     private TextView timeZoneText;
     private TextView latitudeText;
@@ -46,7 +43,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         intent = new Intent(this, ListenerService.class);
 
         netStatusText = findViewById(R.id.textView);
-        IPText = findViewById(R.id.textView2);
+        cityText = findViewById(R.id.textView2);
         elevationText = findViewById(R.id.textView3);
         timeZoneText = findViewById(R.id.textView4);
         latitudeText = findViewById(R.id.textView5);
@@ -132,20 +129,34 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(detailedViewIntent);
     }
 
-    public void updateUI() {
+    public void updateUI () {
         //update the ui
         String temp;
         temp = "NS: " + BlackBoard.networkStatus;
         netStatusText.setText(temp);
-        temp = "IP: " + BlackBoard.lastIP;
-        IPText.setText(temp);
+        temp = "CITY: " + BlackBoard.city;
+        cityText.setText(temp);
         temp = "ELE: " + BlackBoard.elevation;
         elevationText.setText(temp);
-        temp = "TZ: " + BlackBoard.timeZone;
+        temp = "TZ: ";
+        if (BlackBoard.timeZone != null) {temp += BlackBoard.timeZone.getDisplayName();}
         timeZoneText.setText(temp);
-        temp = "LAT: " + Calendar.getInstance().getTimeZone().getDisplayName();
+        temp = "LAT: ";
         latitudeText.setText(temp);
         temp = "LON: ";
         longitudeText.setText(temp);
+
+        updateMap();
+    }
+
+    public void updateMap () {
+        // Add a marker at current location and move the camera
+        if (mMap == null) {return;}
+        mMap.clear();
+        if (BlackBoard.locationKnown) {
+            LatLng location = new LatLng(BlackBoard.latitude, BlackBoard.longitude);
+            mMap.addMarker(new MarkerOptions().position(location).title("Current Location"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+        }
     }
 }

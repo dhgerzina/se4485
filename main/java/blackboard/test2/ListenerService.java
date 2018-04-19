@@ -30,12 +30,13 @@ public class ListenerService extends IntentService {
 
     //list of knowledge sources
     public KnowledgeSource[] knowledgeSources;
-    public static final int KNOWLEDGE_SOURCE_COUNT = 5;
+    public static final int KNOWLEDGE_SOURCE_COUNT = 6;
     public static final int MAGNETOMETER_LISTENER = 0;
     public static final int ACCELEROMETER_LISTENER = 1;
     public static final int PRESSURE_LISTENER = 2;
     public static final int NETWORK_LISTENER = 3;
     public static final int WEATHER_LISTENER = 4;
+    public static final int LOCATION_ESTIMATOR = 5;
 
     @Nullable
     @Override
@@ -65,6 +66,7 @@ public class ListenerService extends IntentService {
         knowledgeSources[PRESSURE_LISTENER] = new PressureListener();
         knowledgeSources[NETWORK_LISTENER] = new NetworkListener();
         knowledgeSources[WEATHER_LISTENER] = new WeatherListener();
+        knowledgeSources[LOCATION_ESTIMATOR] = new LocationEstimator();
 
         //start the automatic updates for the knowledge sources
         for (KnowledgeSource ks : knowledgeSources) {ks.registerListener();}
@@ -118,5 +120,9 @@ public class ListenerService extends IntentService {
         // Send the notification.
         mNM.notify(NOTIFICATION, notification);
 
+    }
+
+    public static void broadcastUpdate (String update) {
+        context.sendBroadcast(new Intent(update));
     }
 }
