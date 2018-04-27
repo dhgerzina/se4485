@@ -16,13 +16,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.text.DecimalFormat;
+import java.util.TimeZone;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback, HasBlackBoardUI {
+    public static final int UI_UPDATE_DELAY = 1000;
+
     private GoogleMap mMap;
-    private Intent intent;
-    private DecimalFormat decimalFormat = new DecimalFormat("0.00");
+    private Intent listenerServiceIntent;
     private UIUpdateThread uiThread;
+
     private TextView netStatusText;
     private TextView cityText;
     private TextView elevationText;
@@ -30,6 +32,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private TextView latitudeText;
     private TextView longitudeText;
     ToggleButton toggleService;
+    Button detailedButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +43,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        intent = new Intent(this, ListenerService.class);
+        listenerServiceIntent = new Intent(this, ListenerService.class);
 
         netStatusText = findViewById(R.id.textView);
         cityText = findViewById(R.id.textView2);
@@ -61,7 +64,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        Button detailedButton = findViewById(R.id.goToDetailed);
+        detailedButton = findViewById(R.id.goToDetailed);
         detailedButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 goToDetailed();
@@ -75,8 +78,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onResume () {
         super.onResume();
 
+        //resume the UIUpdateThread if needed (create a new one)
         if(toggleService.isActivated()) {
-            uiThread = new UIUpdateThread(this, null);
+            uiThread = new UIUpdateThread(this, UI_UPDATE_DELAY);
             uiThread.start();
         }
     }
@@ -85,6 +89,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onPause () {
         super.onPause();
 
+        //pause the UIUpdateThread if needed
         if (uiThread != null) {
             uiThread.shouldBeRunning = false;
         }
@@ -102,61 +107,77 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        //TODO: add pins based on known data
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
+    /**
+     * Do this when the Find Location button is checked
+     */
     public void whenChecked(){
         System.out.println("Button toggled ON");
-        startService(intent);
+        startService(listenerServiceIntent);
 
-        uiThread = new UIUpdateThread(this, null);
+        uiThread = new UIUpdateThread(this, UI_UPDATE_DELAY);
         uiThread.start();
     }
 
+    /**
+     * Do this when the Find Location button is unchecked
+     */
     public void whenUnChecked(){
         System.out.println("Button toggled OFF");
-        stopService(intent);
+        stopService(listenerServiceIntent);
         uiThread.shouldBeRunning = false;
     }
 
+    /**
+     * Do this when the Go To Detailed View button is pressed
+     */
     public void goToDetailed () {
         Intent detailedViewIntent = new Intent(this, DetailedViewActivity.class);
         startActivity(detailedViewIntent);
     }
 
+    /**
+     * Update the UI
+     */
+    @Override
     public void updateUI () {
-        //update the ui
+        //update the ui text
         String temp;
-        temp = "NS: " + BlackBoard.networkStatus;
+        temp = "NS: " + BlackBoard.getCurrentNetworkStatus();
         netStatusText.setText(temp);
-        temp = "CITY: " + BlackBoard.city;
+        temp = "CITY: " + BlackBoard.getCurrentCity();
         cityText.setText(temp);
-        temp = "ELE: " + BlackBoard.elevation;
+        temp = "ELE: " + BlackBoard.getCurrentElevationRounded();
         elevationText.setText(temp);
+        TimeZone t = BlackBoard.getCurrentTimeZone();
         temp = "TZ: ";
-        if (BlackBoard.timeZone != null) {temp += BlackBoard.timeZone.getDisplayName();}
+        if (t != null) {temp += t.getDisplayName();}
         timeZoneText.setText(temp);
+        double[] ll = BlackBoard.getCurrentLocation();
         temp = "LAT: ";
+        if (ll != null) {temp += ll[0];}
         latitudeText.setText(temp);
         temp = "LON: ";
+        if (ll != null) {temp += ll[1];}
         longitudeText.setText(temp);
 
-        updateMap();
+        updateMap(ll);
     }
 
-    public void updateMap () {
+    /**
+     * Update the map
+     * Kept separate from updating the UI for readability
+     */
+    public void updateMap (double[] ll) {
         // Add a marker at current location and move the camera
-        if (mMap == null) {return;}
-        mMap.clear();
-        if (BlackBoard.locationKnown) {
-            LatLng location = new LatLng(BlackBoard.latitude, BlackBoard.longitude);
-            mMap.addMarker(new MarkerOptions().position(location).title("Current Location"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+        if (mMap != null) {
+            mMap.clear();
+            if (ll != null) {
+                LatLng location = new LatLng(ll[0], ll[1]);
+                mMap.addMarker(new MarkerOptions().position(location).title("Current Location"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+            }
         }
     }
 }

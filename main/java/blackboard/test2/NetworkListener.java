@@ -30,17 +30,18 @@ public class NetworkListener extends KnowledgeSource {
     @Override
     public void onReceive(Context context, Intent intent) {
         //automatic updates
+        boolean found = false;
         try {
             for (NetworkInterface nInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
                 for (InetAddress address : Collections.list(nInterface.getInetAddresses())) {
                     if (!address.isLoopbackAddress()) {
-                        BlackBoard.lastIP = address.getHostAddress();
+                        BlackBoard.updateIP(address.getHostAddress());
+                        found = true;
                         break;
                     }
-
-                    BlackBoard.lastIP = null;
                 }
             }
+            if (!found) {BlackBoard.updateIP(null);}
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -49,9 +50,9 @@ public class NetworkListener extends KnowledgeSource {
                 (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork == null) {BlackBoard.networkStatus = BlackBoard.NETWORK_STATUS_NONE;}
-        else if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {BlackBoard.networkStatus = BlackBoard.NETWORK_STATUS_WIFI;}
-        else {BlackBoard.networkStatus = BlackBoard.NETWORK_STATUS_CELLULAR;}
+        if (activeNetwork == null) {BlackBoard.updateNetworkStatus(BlackBoard.NETWORK_STATUS_NONE);}
+        else if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {BlackBoard.updateNetworkStatus(BlackBoard.NETWORK_STATUS_WIFI);}
+        else {BlackBoard.updateNetworkStatus(BlackBoard.NETWORK_STATUS_CELLULAR);}
 
         broadcastUpdates();
     }

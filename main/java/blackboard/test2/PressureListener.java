@@ -84,7 +84,7 @@ public class PressureListener extends KnowledgeSource implements SensorEventList
             for (int i = 0; i < BlackBoard.pressureCounter; i++) {
                 sum += BlackBoard.pressureArray[i];
             }
-            BlackBoard.pressure = sum/BlackBoard.pressureCounter;
+            BlackBoard.updatePressure(sum/BlackBoard.pressureCounter);
             BlackBoard.pressureCounter = 0;
 
             //broadcast pressure update

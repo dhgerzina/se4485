@@ -13,9 +13,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Created by Alek on 3/24/2018.
+ * Service to handle all automatic data updates for the blackboard
  */
-
 public class ListenerService extends IntentService {
     private NotificationManager mNM;
     private int NOTIFICATION = R.string.local_service_started;
@@ -24,12 +23,12 @@ public class ListenerService extends IntentService {
         super("ListenerService");
     }
 
-    //static data needed for the knowledge sources
+    //static data needed by the knowledge sources
     public static SensorManager sensorManager;
     public static Context context;
 
     //list of knowledge sources
-    public KnowledgeSource[] knowledgeSources;
+    private KnowledgeSource[] knowledgeSources;
     public static final int KNOWLEDGE_SOURCE_COUNT = 6;
     public static final int MAGNETOMETER_LISTENER = 0;
     public static final int ACCELEROMETER_LISTENER = 1;
@@ -122,6 +121,11 @@ public class ListenerService extends IntentService {
 
     }
 
+    /**
+     * Used by the knowledge sources because broadcastListeners cannot send broadcasts themselves
+     *
+     * @param update String to broadcast
+     */
     public static void broadcastUpdate (String update) {
         context.sendBroadcast(new Intent(update));
     }

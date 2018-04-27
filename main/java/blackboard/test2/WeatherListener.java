@@ -43,12 +43,12 @@ public class WeatherListener extends KnowledgeSource {
     }
 
     public void onPressureChange() {
-        if (BlackBoard.weatherPressure == -1 || BlackBoard.pressure == -1) {
-            BlackBoard.elevation = -1;
+        if (BlackBoard.getCurrentWeatherPressure() == -1 || BlackBoard.getCurrentPressure() == -1) {
+            BlackBoard.updateElevation(-1);
         }
         else {
             //TODO: this is not even close to accurate for some reason, easily 40 meters off at times
-            BlackBoard.elevation = SensorManager.getAltitude(BlackBoard.weatherPressure, BlackBoard.pressure);
+            BlackBoard.updateElevation(SensorManager.getAltitude((float) BlackBoard.getCurrentWeatherPressure(), (float) BlackBoard.getCurrentPressure()));
         }
     }
 

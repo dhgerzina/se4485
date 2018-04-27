@@ -10,9 +10,9 @@ import android.hardware.SensorManager;
 public class AccelerometerListener extends KnowledgeSource implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
-        BlackBoard.accelerometer[0] = event.values[0];
-        BlackBoard.accelerometer[1] = event.values[1];
-        BlackBoard.accelerometer[2] = event.values[2];
+        double[] values = new double[3];
+        for (int i = 0; i < values.length; i++) {values[i] = event.values[i];}
+        BlackBoard.updateAccelerometer(values);
     }
 
     @Override

@@ -1,37 +1,32 @@
 package blackboard.test2;
 
+import android.app.Activity;
+
+/**
+ * Automatically updates the UI for the given Activity based on BlackBoard data
+ */
 public class UIUpdateThread extends Thread {
     public boolean shouldBeRunning = true;
-    public MainActivity mainActivity;
-    public DetailedViewActivity detailedViewActivity;
+    public HasBlackBoardUI userInterface;
+    private int delay;
 
-    public UIUpdateThread (MainActivity mainActivity, DetailedViewActivity detailedViewActivity) {
+    public UIUpdateThread (HasBlackBoardUI ui, int delay) {
         super();
-        this.mainActivity = mainActivity;
-        this.detailedViewActivity = detailedViewActivity;
+        userInterface = ui;
+        this.delay = delay;
     }
 
     @Override
     public void run() {
         try {
             while (!isInterrupted() && shouldBeRunning) {
-                Thread.sleep(1000);
-                if (mainActivity != null) {
-                    mainActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mainActivity.updateUI();
-                        }
-                    });
-                }
-                if (detailedViewActivity != null) {
-                    detailedViewActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            detailedViewActivity.updateUI();
-                        }
-                    });
-                }
+                Thread.sleep(delay);
+                ((Activity)userInterface).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        userInterface.updateUI();
+                    }
+                });
             }
         } catch (InterruptedException e) {}
     }

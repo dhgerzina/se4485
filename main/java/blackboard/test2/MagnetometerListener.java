@@ -10,9 +10,9 @@ import android.hardware.SensorManager;
 public class MagnetometerListener extends KnowledgeSource implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
-        BlackBoard.magnetometer[0] = event.values[0];
-        BlackBoard.magnetometer[1] = event.values[1];
-        BlackBoard.magnetometer[2] = event.values[2];
+        double[] values = new double[3];
+        for (int i = 0; i < values.length; i++) {values[i] = event.values[i];}
+        BlackBoard.updateMagnetometer(values);
     }
 
     @Override

@@ -23,8 +23,9 @@ public class LocationEstimator extends KnowledgeSource {
 
     @Override
     public void broadcastUpdates() {
-        //not used currently
-        ListenerService.broadcastUpdate(BlackBoard.CITY_UPDATED);
+        //city update broadcasts are sent by the NetworkGetRequestTask due to possible response delays
+        //ListenerService.broadcastUpdate(BlackBoard.CITY_UPDATED);
+        ListenerService.broadcastUpdate(BlackBoard.TIMEZONE_UPDATED);
     }
 
     @Override
@@ -33,8 +34,8 @@ public class LocationEstimator extends KnowledgeSource {
         NetworkGetRequestTask locatorTask = new NetworkGetRequestTask();
         locatorTask.execute(0);
         //TODO: find a better place to do this
-        BlackBoard.timeZone = Calendar.getInstance().getTimeZone();
+        BlackBoard.updateTimeZone(Calendar.getInstance().getTimeZone());
         //TODO: nothing currently uses this
-        ListenerService.broadcastUpdate(BlackBoard.TIMEZONE_UPDATED);
+        broadcastUpdates();
     }
 }

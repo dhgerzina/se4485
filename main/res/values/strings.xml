@@ -1,13 +1,13 @@
 <resources>
-    <string name="app_name">Test2</string>
-    <string name="title_activity_main">Main</string>
-    <string name="title_activity_detailed">Detailed View</string>
-    <string name="button_name">button1</string>
-    <string name="button_off">Find Location</string>
-    <string name="button_on">Stop Finding</string>
-    <string name="detailed_view_start_button_text">Go To Detailed View</string>
-    <string name="detailed_view_back_button_text">Back</string>
-    <string name="local_service_started">Started Listener Service</string>
-    <string name="local_service_stopped">Stopped Listener Service</string>
-    <string name="local_service_label">Listener Service</string>
+<string name="app_name">Test2</string>
+<string name="title_activity_main">Main</string>
+<string name="title_activity_detailed">Detailed View</string>
+<string name="button_name">button1</string>
+<string name="button_off">Find Location</string>
+<string name="button_on">Stop Finding</string>
+<string name="detailed_view_start_button_text">Go To Detailed View</string>
+<string name="detailed_view_back_button_text">Back</string>
+<string name="local_service_started">Started Listener Service</string>
+<string name="local_service_stopped">Stopped Listener Service</string>
+<string name="local_service_label">Listener Service</string>
 </resources>
